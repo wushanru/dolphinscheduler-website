@@ -23,11 +23,27 @@ const docSearchData = {
 };
 
 const getVersion = (name) => {
-  const result = name.match(/(\d+)-(\d+)-(\d+)/);
-  return result[1] + "." + result[2] + "." + result[3];
+  if (name === "docsdev") {
+    return "dev";
+  }
+  // docs3-3-0
+  const regex1 = new RegExp(/(\d+)-(\d+)-(\d+)/);
+
+  // docs3-3-0-alpha
+  const regex2 = new RegExp(/(\d+)-(\d+)-(\d+)-(\w+)/);
+
+  const result = name.match(regex2) ? name.match(regex2) : name.match(regex1)
+
+  if (result.length === 4) {
+    return result[1] + "." + result[2] + "." + result[3];
+  } else if (result.length === 5) {
+    return result[1] + "." + result[2] + "." + result[3] + "-" + result[4];
+  } else {
+    throw new Error("Invalid version format");
+  }
 };
 
-const formateFile = (filePath) => {
+const formatFile = (filePath) => {
   const fileContent = fs.readFileSync(filePath);
   const formatContent = fileContent
     .toString()
@@ -105,13 +121,12 @@ const getMenu = (list, data, version, lang, isDeployment, location) => {
     }
 
     if (item.link && item.link.includes(version)) {
-      const baseLink = item.link.split(version)[1];
+      const baseLink = item.link.replace(version, "|").split("|")[1];
       temp.key = baseLink.replace(/.html/, "").replace(/\/user_doc/, "");
       const mdPath = `${BASE}/docs/${lang}/${version}${baseLink.replace(
         /.html/,
         ".md"
       )}`;
-
       const mdInfo = parseMd(mdPath, lang, version);
       const onlyText = mdInfo["__html"].replace(/<.*?>/g, "");
 
@@ -168,7 +183,7 @@ const getMenu = (list, data, version, lang, isDeployment, location) => {
         temp.children,
         version,
         lang,
-        ["部署指南", "集成", "Installation", "integration"].includes(
+        ["部署指南", "集成", "贡献指南", "Installation", "integration", "Contribution"].includes(
           item.title
         ),
         temp.location
@@ -180,7 +195,7 @@ const getMenu = (list, data, version, lang, isDeployment, location) => {
   });
 };
 
-const wirteFileByLang = (data, lang, fileName) => {
+const writeFileByLang = (data, lang, fileName) => {
   const targetPath = `${BASE}/public/fetch/doc/${lang}`;
   fs.ensureDirSync(targetPath);
   fs.writeFileSync(
@@ -189,7 +204,7 @@ const wirteFileByLang = (data, lang, fileName) => {
   );
 };
 
-const wirteDeployment = () => {
+const writeDeployment = () => {
   const targetDataPath = `${BASE}/public/fetch`;
   fs.ensureDirSync(targetDataPath);
   fs.writeFileSync(
@@ -198,7 +213,7 @@ const wirteDeployment = () => {
   );
 };
 
-const wirteDownload = () => {
+const writeDownload = () => {
   const targetDataPath = `${BASE}/public/fetch`;
   fs.ensureDirSync(targetDataPath);
   fs.writeFileSync(
@@ -207,7 +222,7 @@ const wirteDownload = () => {
   );
 };
 
-const wirteVersion = () => {
+const writeVersion = () => {
   fs.ensureDirSync(`${BASE}/public/fetch`);
   fs.writeFileSync(
     `${BASE}/public/fetch/version.json`,
@@ -215,7 +230,7 @@ const wirteVersion = () => {
   );
 };
 
-const wirteSearchDocData = () => {
+const writeSearchDocData = () => {
   ["en-us", "zh-cn"].forEach((lang) => {
     const targetSearchPath = `${BASE}/public/data/doc/${lang}.json`;
     fs.ensureFileSync(targetSearchPath);
@@ -229,28 +244,10 @@ const wirteSearchDocData = () => {
 const parseDocsMenu = () => {
   const sourcePath = BASE + "/config/docs";
   const docs = fs.readdirSync(sourcePath);
-  const excludeContributionVersions = [
-    "1.2.0",
-    "1.2.1",
-    "1.3.1",
-    "1.3.2",
-    "1.3.3",
-    "1.3.4",
-    "1.3.5",
-    "1.3.6",
-    "1.3.8",
-    "1.3.9",
-    "2.0.0",
-    "2.0.1",
-    "2.0.2",
-    "2.0.3",
-    "2.0.5",
-    "2.0.6",
-  ];
   docs.forEach((doc) => {
     const filePath = path.join(sourcePath, doc);
     const fileInfo = path.parse(filePath);
-    formateFile(filePath);
+    formatFile(filePath);
     const fileContent = require(`${filePath}`);
     const enUs = [];
     const zhCn = [];
@@ -260,37 +257,18 @@ const parseDocsMenu = () => {
     const enMenu = fileContent["en-us"].sidemenu;
     const zhMenu = fileContent["zh-cn"].sidemenu;
 
-    if (!excludeContributionVersions.includes(version)) {
-      const contributionMenuFn = require(`${BASE}/config/contribution_menu.js`);
-      if (contributionMenuFn && typeof contributionMenuFn === "function") {
-        const contributionMenu = contributionMenuFn(version);
-        enMenu.some((item, index) => {
-          return (
-            item.title === "Contribution" &&
-            (enMenu[index] = contributionMenu["en-us"])
-          );
-        });
-        zhMenu.some((item, index) => {
-          return (
-            item.title === "贡献指南" &&
-            (zhMenu[index] = contributionMenu["zh-cn"])
-          );
-        });
-      }
-    }
-
     getMenu(enMenu, enUs, version, "en-us", false);
     getMenu(zhMenu, zhCn, version, "zh-cn", false);
 
     versionData.push(version);
 
-    wirteFileByLang(enUs, "en-us", fileInfo.name);
-    wirteFileByLang(zhCn, "zh-cn", fileInfo.name);
+    writeFileByLang(enUs, "en-us", fileInfo.name);
+    writeFileByLang(zhCn, "zh-cn", fileInfo.name);
   });
-  wirteSearchDocData();
-  wirteDeployment();
-  wirteDownload();
-  wirteVersion();
+  writeSearchDocData();
+  writeDeployment();
+  writeDownload();
+  writeVersion();
 };
 
 module.exports = parseDocsMenu;

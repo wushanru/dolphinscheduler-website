@@ -37,6 +37,8 @@ const NavBar = () => {
               setSelectedKeys("");
             }}
           />
+        </div>
+        <div className="navbar-item">
           {!isSearch && (
             <div className="navbar-menu">
               <Menu
@@ -97,7 +99,7 @@ const NavBar = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      Github
+                      GitHub
                     </a>
                   ),
                   key: "github",
@@ -143,16 +145,6 @@ const NavBar = () => {
           >
             <Button shape="round">{t("contacts")}</Button>
           </Dropdown>
-          <Button
-            type="primary"
-            shape="round"
-            onClick={() => {
-              navigate(`/${locale}/download`);
-              setSelectedKeys("");
-            }}
-          >
-            {t("download")}
-          </Button>
         </Space>
       </section>
     </nav>

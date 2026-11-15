@@ -2,30 +2,25 @@
 
 This project keeps all sources used for building up DolphinScheduler's official website which is served at https://dolphinscheduler.apache.org/.
 
-## Prerequisite
-
-DolphinScheduler website is powered by [docsite](https://github.com/chengshiwen/docsite-ext). Please also make sure your
-node version is 10+, version lower than 10.x is not supported yet.
-
 ## Build Website Locally
 
 1. Run `yarn` in the root directory to install the dependencies.
 2. Run commands to collect resources
    2.1. Run `export PROTOCOL_MODE=ssh` tells Git clone resource via SSH protocol instead of HTTPS protocol
-   2.2. Run `./scripts/prepare_docs.sh` prepare all related resources, for more information you could see [how prepare script work](HOW_PREPARE_WOKR.md)
-3. Run `yarn generate` in the root directory to format and perpare the data.
-4. Run `yarn dev` in the root directory to start a local server, you will see the website in 'http://localhost:8080'.
+   2.2. Run `./scripts/prepare_docs.sh` prepare all related resources, for more information you could see [how prepare script work](HOW_PREPARE_WORK.md)
+3. Run `yarn generate` in the root directory to format and prepare the data.
+4. Run `yarn dev` in the root directory to start a local server, you will see the website in 'http://localhost:3000'.
 
 ```
 Note: if you clone the code in Windows, not Mac or Linux. Please read the details below.
 If you execute the commands like the two steps above, you will get the exception "UnhandledPromiseRejectionWarning: Error: EPERM: operation not permitted, symlink '2.0.3' -> 'latest'".
 If you get the exception "Can't resolve 'antd' in xxx",you can run `yarn add antd` and `yarn install`.
-Because the two steps run command `./scripts/prepare_docs.sh` should Linux environment,so if you are a windwos system you can use WSL do it.
-When meeting this problem. You can run two steps in the cmd.exe as an ADMINISTRATOR MEMBER.
+Because the `./scripts/prepare_docs.sh` command requires a Linux environment, if you are on a Windows system, you can use WSL to complete this step.
+When you encounter this problem. You can run the two steps in cmd.exe as an administrator on your Windows system.
 ```
 
-3. Run `yarn build` to build source code into dist directory.
-4. Verify your change locally: `python -m SimpleHTTPServer 8000`, when your python version is 3 use :`python3 -m http.server 8000` instead.
+5. Run `yarn build` to build source code, this will automatically generate a directory called `build`, wait for the execution to complete and into `build` directory.
+6. Verify your change locally: `python -m SimpleHTTPServer 8000`, when your python version is 3 use :`python3 -m http.server 8000` instead.
 
 If you have higher version of node installed, you may consider `nvm` to allow different versions of `node` coexisting on your machine.
 
